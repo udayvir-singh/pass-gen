@@ -1,0 +1,11 @@
+[package]
+name = "pass-gen"
+version = "0.0.0"
+edition = "2021"
+
+[[bin]]
+name = "pass-gen"
+path = "src/pass-gen.rs"
+
+[dependencies]
+rand = "0.8.5"
