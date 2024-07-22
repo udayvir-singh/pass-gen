@@ -1,0 +1,240 @@
+.TH pass-gen 1 "Password Generator" \fIpass-gen\fR(1) "Password Generator"
+
+.SH NAME
+pass-gen - A general purpose CLI password generator
+
+.SH SYNOPSIS
+.B pass-gen
+.RB [ OPTIONS ]
+
+.SH OPTIONS
+.TP
+\fB-p\fR,\fB --preset=\fIPRESET\fR
+Pick the settings from a predefined preset. (default: \fBword\fR)
+
+The following table describes all of the presets:
+
+.TS
+box nospaces tab(|);
+Lb | Lb
+Lb | L.
+PRESET  | DESCRIPTION
+_
+word    | Preset for generating 6 word passphrases.
+number  | Preset for generating 6 random digits.
+alpha   | Preset for generating 20 random letters.
+alnum   | Preset for generating 20 random letters and digits.
+complex | Preset for generating 20 random letters, digits and symbols.
+.TE
+
+.TP
+\fB-f\fR,\fB --format=\fIFORMAT\fR
+Add a comma separated list of datasets to the password generation format.
+
+The dataset name can optionally be followed by its weight separated by a colon.
+
+.B BUNDLED DATASETS
+
+The following table describes all of the bundled datasets:
+
+.TS
+box nospaces tab(|);
+Lb | Lb
+Lb | L.
+DATASET | DESCRIPTION
+_
+lower   | Dataset containing lowercase letters.
+upper   | Dataset containing uppercase letters.
+digit   | Dataset containing ASCII digits.
+symbol  | Dataset containing ASCII symbols.
+word    | Dataset containing common english words.
+.TE
+
+.B DATASET LOCATION
+
+The dataset files are searched in the following order:
+
+.B 1)
+${PASS_GEN_DATA_DIR}/${DATASET_NAME}.txt
+
+.B 2)
+${XDG_DATA_HOME}/pass-gen/${DATASET_NAME}.txt
+
+.B 3)
+/usr/share/pass-gen/${DATASET_NAME}.txt
+
+.B EBNF DEFINATION
+
+.EX
+format = dataset, (",", dataset)*;
+
+dataset = dataset-name, [":", dataset-weight];
+
+dataset-name = character+;
+
+dataset-weight = (digit+, ["."], digit*) | (digit*, ["."], digit+);
+.EE
+
+.TP
+\fB-d\fR,\fB --dataset=\fIPATH:WEIGHT\fR
+Add a custom dataset to the password generation format.
+
+The dataset path can optionally be followed by its weight separated by a colon.
+
+.TP
+\fB-s\fR,\fB --separator=\fISTRING\fR
+Set the separator between password elements.
+
+The default separator depends on whichever of the the following flags is parsed first:
+
+.TS
+box nospaces tab(|);
+Lb | Lb
+Lb | L.
+FLAG                  | DEFAULT SEPARATOR
+_
+--preset \fIword\fR   | " "
+--preset \fI<ARG>\fR  | ""
+--format \fI<ARG>\fR  | ""
+--dataset \fI<ARG>\fR | ""
+.TE
+
+.TP
+\fB-n\fR,\fB --count=\fINUMBER\fR
+Set the number of elements to generate. (default: \fB6\fR)
+
+.TP
+\fB-b\fR,\fB --batch=\fINUMBER\fR
+Set the number of batches to generate. (default: \fB1\fR)
+
+.TP
+\fB-r\fR,\fB --report\fR
+Print the password strength to stderr.
+
+.TP
+\fB-h\fR,\fB --help\fR
+Print the help message and exit.
+
+.SH ENVIRONMENT VARIABLES
+.TP
+.B PASS_GEN_DATA_DIR
+Path to a custom directory containing datasets. It is unset by default.
+
+.SH EXAMPLES
+.B 1)
+Generate a 6 word dicewire style passphrase:
+
+.TS
+box;
+L.
+$ pass-gen
+$ pass-gen -p word
+$ pass-gen -f word -s " " -n 6
+_
+> capabilities skulls dodging wishful tinged suggestion
+.TE
+
+.B 2)
+Generate a 6 word dicewire style passphrase from a custom wordlist:
+
+.TS
+box;
+L.
+$ pass-gen -d my_wordlist.txt -s " " -n 6
+_
+> downloads erase princesses strong secant enforcement
+.TE
+
+.B 3)
+Generate a 20 character password with letters, numbers and symbols:
+
+.TS
+box;
+L.
+$ pass-gen -p complex
+$ pass-gen -f lower,upper,digit,symbol -n 20
+_
+> w!iv?541hO6vON0GPbc$
+.TE
+
+.B 4)
+Generate a 20 character password with 1/3 lowercase and 2/3 uppercase letters:
+
+.TS
+box;
+L.
+$ pass-gen -f lower,upper:2 -n 20
+_
+> dEMsXSACLXncAYBtPDcS
+.TE
+
+.B 5)
+Generate a 4 word capitalized passphrase separated with dashes with 6 numbers on the end:
+
+.TS
+box;
+L.
+$ pass-gen -n 4 -s - | (head -c1 | tr a-z A-Z; cat); printf -; pass-gen -p number
+_
+> Superior-haunting-progression-unchecked-886031
+.TE
+
+The above example can be simplified by using the \fIpass-genf\fR(1) command:
+
+.TS
+box;
+L.
+$ pass-genf '%f{c,n=4,s=-}-%f' word digit
+_
+> Original-admired-durability-lisp-343886
+.TE
+
+.B 6)
+Insert a new randomly generated password into password store:
+
+.TS
+box;
+L.
+$ pass-gen | pass insert -m <FILENAME>
+.TE
+
+.B 7)
+Update the password in an existing password store file:
+
+.TS
+box;
+L.
+$ (pass-gen; echo; pass <FILENAME> | tail +2) >>(pass insert -m <FILENAME>)
+.TE
+
+.SH SEE ALSO
+.MR pass-genf 1 ,
+.MR pass 1
+
+.SH AUTHOR
+Udayvir Singh
+.UR https://github.com/udayvir-singh
+.UE
+
+.SH LICENCE
+MIT License
+
+Copyright (c) Udayvir Singh
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.

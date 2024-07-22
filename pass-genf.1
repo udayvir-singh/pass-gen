@@ -1,0 +1,194 @@
+.TH pass-genf 1 "Password Generation Formatter" \fIpass-genf\fR(1) "Password Generation Formatter"
+
+.SH NAME
+pass-genf - An advanced formatter for \fIpass-gen\fR(1)
+
+.SH SYNOPSIS
+.B pass-genf
+.RB [ OPTIONS ]
+--
+.B FORMAT
+.RB [ ARGUMENTS ]
+
+.SH OPTIONS
+.TP
+\fB-r\fR,\fB --report\fR
+Print the password strength to stderr.
+
+.TP
+\fB-h\fR,\fB --help\fR
+Print the help message and exit.
+
+.SH FORMAT SYNTAX
+
+.TP
+.B Format Specifiers
+
+Format specifiers are placeholders in the format string,
+starting with \fB%\fR, that define how arguments should be formatted.
+
+The following table describes the format specifiers:
+
+.TS
+box nospaces tab(|);
+Lb | Lb
+Lb | L.
+SPECIFIER | DESCRIPTION
+_
+%s        | Print the next string argument.
+%f        | Print a random password with the next argument being the format.
+%d        | Print a random password with the next argument being the dataset.
+%[0-9]+   | Print the output from a previous nth argument.
+%%        | Print % character literal.
+%{        | Print { character literal.
+%[        | Print [ character literal.
+%(        | Print ( character literal.
+%<        | Print < character literal.
+.TE
+
+.TP
+.B Format Options
+
+The format options are written after the format specifier,
+and are enclosed within braces which depend on the level of nesting:
+
+.TS
+box nospaces tab(|);
+Lb | Lb
+Lb | L.
+LEVEL | OPTION SYNTAX
+_
+1 | { .. }
+2 | [ .. ]
+3 | ( .. )
+4 | < .. >
+.TE
+
+
+.B STRING SUBSTITUTION
+
+The following table describes the options for \fB%s\fR:
+
+.TS
+box nospaces tab(|);
+Lb | Lb
+Lb | L.
+OPTION | DESCRIPTION
+_
+l      | Lower case the string.
+u      | Upper case the string.
+c      | Capitalize the string.
+t      | Title case the string.
+.TE
+
+.B PASSWORD SUBSTITUTION
+
+The following table describes the options for \fB%f\fR and \fB%d\fR:
+
+.TS
+box nospaces tab(|);
+Lb | Lb
+Lb | L.
+OPTION        | DESCRIPTION
+_
++f            | Append the next argument as the format.
++d            | Append the next argument as the dataset.
+n=\fI<INT>\fR | Set the number of elements to generate.
+s=\fI<STR>\fR | Set the separator between the elements.
+l             | Lower case the password.
+u             | Upper case the password.
+c             | Capitalize the password.
+t             | Title case the password.
+.TE
+
+.B REFERENCE SUBSTITUTION
+
+The following table describes the options for \fB%[0-9]+\fR:
+
+.TS
+box nospaces tab(|);
+Lb | Lb
+Lb | L.
+OPTION | DESCRIPTION
+_
+l      | Lower case the reference.
+u      | Upper case the reference.
+c      | Capitalize the reference.
+t      | Title case the reference.
+.TE
+
+.SH ENVIRONMENT VARIABLES
+.TP
+.B PASS_GEN_SCRIPT
+Path to the \fIpass-gen\fR(1) bash script. (default: \fBpass-gen\fR)
+
+.TP
+.B PASS_GEN_DATA_DIR
+Path to a custom directory containing datasets. It is unset by default.
+
+.SH EXAMPLES
+.B 1)
+Generate a 6 word dicewire style passphrase:
+
+.TS
+box;
+L.
+$ pass-genf '%f{s= }' word
+_
+> capabilities skulls dodging wishful tinged suggestion
+.TE
+
+.B 2)
+Generate a 4 word capitalized passphrase separated with dashes with 6 numbers on the end:
+
+.TS
+box;
+L.
+$ pass-genf '%f{c,n=4,s=-}-%f' word digit
+_
+> Original-admired-durability-lisp-343886
+.TE
+
+.B 3)
+Generate a random username with random name, symbols and numbers:
+
+.TS
+box;
+L.
+$ pass-genf '%f{c,n=2,s=%f[n=1]}%2%f{n=2}' word symbol digit
+_
+> Censor~unafraid~48
+.TE
+
+
+.SH SEE ALSO
+.MR pass-gen 1 ,
+.MR pass 1
+
+.SH AUTHOR
+Udayvir Singh
+.UR https://github.com/udayvir-singh
+.UE
+
+.SH LICENCE
+MIT License
+
+Copyright (c) Udayvir Singh
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
