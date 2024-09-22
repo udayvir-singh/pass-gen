@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+
 IFS=$'\n'
 
 set +B -feuo pipefail
@@ -132,7 +133,7 @@ find_element_file () {
     for DIR in "${PASS_GEN_DATA_DIRS[@]}"; do
         [ ! -d "${DIR}" ] && continue
 
-        local FILE="${DIR}/${NAME}"
+        local FILE="${DIR}/datasets/${NAME}"
 
         if [ -r "${FILE}" ]; then
             printf '%s' "${FILE}"
@@ -420,37 +421,37 @@ parse_args () {
                         [ ! -v ELEMENT_COUNT ] && ELEMENT_COUNT=6
                         [ ! -v ELEMENT_SEPARATOR ] && ELEMENT_SEPARATOR=" "
 
-                        read_element_file word.txt 1
+                        read_element_file word 1
                     ;;
                     number)
                         [ ! -v ELEMENT_COUNT ] && ELEMENT_COUNT=6
                         [ ! -v ELEMENT_SEPARATOR ] && ELEMENT_SEPARATOR=""
 
-                        read_element_file digit.txt 1
+                        read_element_file digit 1
                     ;;
                     alpha)
                         [ ! -v ELEMENT_COUNT ] && ELEMENT_COUNT=20
                         [ ! -v ELEMENT_SEPARATOR ] && ELEMENT_SEPARATOR=""
 
-                        read_element_file lower.txt 1
-                        read_element_file upper.txt 1
+                        read_element_file lower 1
+                        read_element_file upper 1
                     ;;
                     alnum)
                         [ ! -v ELEMENT_COUNT ] && ELEMENT_COUNT=20
                         [ ! -v ELEMENT_SEPARATOR ] && ELEMENT_SEPARATOR=""
 
-                        read_element_file lower.txt 1
-                        read_element_file upper.txt 1
-                        read_element_file digit.txt 1
+                        read_element_file lower 1
+                        read_element_file upper 1
+                        read_element_file digit 1
                     ;;
                     complex)
                         [ ! -v ELEMENT_COUNT ] && ELEMENT_COUNT=20
                         [ ! -v ELEMENT_SEPARATOR ] && ELEMENT_SEPARATOR=""
 
-                        read_element_file lower.txt 1
-                        read_element_file upper.txt 1
-                        read_element_file digit.txt 1
-                        read_element_file symbol.txt 1
+                        read_element_file lower 1
+                        read_element_file upper 1
+                        read_element_file digit 1
+                        read_element_file symbol 1
                     ;;
                     *) error "Invalid preset: $(quote "${2}")" ;;
                 esac
@@ -478,7 +479,7 @@ parse_args () {
                         error "Missing dataset name in format: $(quote "${2}")"
                     fi
 
-                    read_element_file "${NAME}.txt" "${WEIGHT}"
+                    read_element_file "${NAME}" "${WEIGHT}"
                 done
 
                 shift 2
@@ -554,7 +555,7 @@ parse_args () {
 
     # use settings from words preset as default
     if [ ${#POOL_LENGTH[@]} = 0 ]; then
-        read_element_file word.txt 1
+        read_element_file word 1
     fi
 
     if [ ! -v ELEMENT_COUNT ]; then
