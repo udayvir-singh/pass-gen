@@ -10,7 +10,7 @@ shopt -s lastpipe
 # ---------------------- #
 readonly PASS_GEN_SCRIPT="${PASS_GEN_SCRIPT:-pass-gen}"
 
-declare -rx PASS_GEN_ENTROPY_FILE="${PASS_GEN_ENTROPY_FILE:-/tmp/pass-gen-tmp}"
+declare -rx PASS_GEN_ENTROPY_FILE="${PASS_GEN_ENTROPY_FILE:-/tmp/pass-gen.report}"
 
 
 # ---------------------- #
@@ -24,7 +24,7 @@ OUTPUT_FORMAT=""
 OUTPUT_ARGUMENTS=()
 
 ENTROPY_INFO=()
-GENERATE_REPORT=0
+GENERATE_REPORT=no
 
 
 # ---------------------- #
@@ -305,7 +305,7 @@ substitute_password () {
     # generate command
     local CMD=("${PASS_GEN_SCRIPT}" "${FORMAT_FLAGS[@]}" -n "${COUNT_OPTION}" -s "${SEP_OPTION}")
 
-    if [ "${GENERATE_REPORT}" = 1 ]; then
+    if [ "${GENERATE_REPORT}" = yes ]; then
         CMD+=(--private:calculate_entropy)
     fi
 
@@ -324,7 +324,7 @@ substitute_password () {
     eval ${VAR}='${VALUE}'
 
     # push entropy information
-    if [ "${GENERATE_REPORT}" = 1 ]; then
+    if [ "${GENERATE_REPORT}" = yes ]; then
         ENTROPY_INFO+=(
             "${FORMAT} (n=${COUNT_OPTION})"
             "$(exprf '%f' "${COUNT_OPTION} * $(< "${PASS_GEN_ENTROPY_FILE}")")"
@@ -567,7 +567,8 @@ print_help () {
 pass-genf [OPTIONS] -- FORMAT [ARGUMENTS]
 
 Options:
-  -r, --report     Print the password strength to stderr
+  -r, --report     Enable password strength reporting
+  +r, --no-report  Disable password strength reporting
   -h, --help       Print this help message and exit
 
 Environment Variables:
@@ -593,7 +594,11 @@ parse_args () {
                 exit 0
             ;;
             -r | --report)
-                GENERATE_REPORT=1
+                GENERATE_REPORT=yes
+                shift 1
+            ;;
+            +r | --no-report)
+                GENERATE_REPORT=no
                 shift 1
             ;;
             *)
@@ -617,19 +622,19 @@ parse_args () {
 #          MAIN          #
 # ---------------------- #
 main () {
-    # parse arguments
-    parse_args "${@}"
-
-    # validate pass-gen script path
+    # validate environment
     if ! command -v "${PASS_GEN_SCRIPT}" &>/dev/null; then
         error "Invalid executable in PASS_GEN_SCRIPT: $(quote "${PASS_GEN_SCRIPT}")"
     fi
 
+    # parse arguments
+    parse_args "${@}"
+
     # generate output
     gen_output
 
-    # print report
-    if [ "${GENERATE_REPORT}" = 1 ]; then
+    # generate report
+    if [ "${GENERATE_REPORT}" = yes ]; then
         print_report
     fi
 

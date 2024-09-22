@@ -13,7 +13,7 @@ readonly PASS_GEN_DATA_DIRS=(
     "/usr/share/pass-gen"
 )
 
-readonly PASS_GEN_ENTROPY_FILE="${PASS_GEN_ENTROPY_FILE:-/tmp/pass-gen-tmp}"
+readonly PASS_GEN_ENTROPY_FILE="${PASS_GEN_ENTROPY_FILE:-/tmp/pass-gen.report}"
 
 
 # ---------------------- #
@@ -23,7 +23,7 @@ unset ELEMENT_COUNT
 unset ELEMENT_SEPARATOR
 
 BATCH_COUNT=1
-GENERATE_REPORT=0
+GENERATE_REPORT=no
 
 
 # ---------------------- #
@@ -297,7 +297,8 @@ Options:
   -s, --separator    Set the separator between password elements
   -n, --count        Set the number of elements to generate
   -b, --batch        Set the number of batches to generate
-  -r, --report       Print the password strength to stderr
+  -r, --report       Enable password strength reporting
+  +r, --no-report    Disable password strength reporting
   -h, --help         Print this help message and exit
 
 Presets:
@@ -535,11 +536,15 @@ parse_args () {
                 shift 2
             ;;
             -r | --report)
-                GENERATE_REPORT=1
+                GENERATE_REPORT=yes
+                shift 1
+            ;;
+            +r | --no-report)
+                GENERATE_REPORT=no
                 shift 1
             ;;
             --private:calculate_entropy)
-                GENERATE_REPORT=2
+                GENERATE_REPORT=private:calculate_entropy
                 shift 1
             ;;
             -*) error "Invalid flag: $(quote "${1}")" ;;
@@ -569,10 +574,12 @@ main () {
     # parse arguments
     parse_args "${@}"
 
-    # print report
+    # generate report
     case "${GENERATE_REPORT}" in
-        1) print_report ;;
-        2) calculate_entropy > "${PASS_GEN_ENTROPY_FILE}" ;;
+        private:calculate_entropy)
+            calculate_entropy > "${PASS_GEN_ENTROPY_FILE}"
+        ;;
+        yes) print_report ;;
     esac
 
     # generate password
